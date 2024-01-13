@@ -1,0 +1,2 @@
+nvcc ./shakespeare.cu -o shakespeare
+make: *** [run] Interrupt

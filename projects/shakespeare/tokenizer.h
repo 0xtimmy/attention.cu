@@ -24,12 +24,13 @@ class Tokenizer {
             _vocab = vocab;
             stoi = {};
             itos = {};
-            int i =0;
+            int i = 0;
             for (const char& c : vocab) {
                 stoi[c] = i;
                 itos[i] = c;
                 i++;
             }
+
         }
 
         ~Tokenizer() { }
@@ -49,9 +50,29 @@ class Tokenizer {
         std::string decode(int* x, int size) {
             std::string y(size, ' ');
             for (int i = 0; i < size; i++) {
-                y[i] = stoi[x[i]];
+                y[i] = itos[x[i]];
             }
             return y;
+        }
+
+        char decode(int x) {
+            return itos[x];
+        }
+
+        std::string decode_logits(Tensor* logits, int block_size) {
+            int* y = (int*)malloc(sizeof(int)*block_size);
+            int* devy;
+            cudaMalloc(&devy, sizeof(int)*block_size);
+            algebra::max_idx<<<(block_size/32+1)*32, 32>>>(logits->gpu_ptr(), devy, size(), block_size);
+            cudaMemcpy(y, devy, sizeof(int)*block_size, cudaMemcpyDeviceToHost);
+
+            /*
+            std::cout << "Sampled: [ ";
+            for (int i = 0; i < block_size; i++) { std::cout << y[i] << " "; }
+            std::cout << "]\n";
+            */
+
+            return decode(y, block_size);
         }
 
         void print_vocab() {
@@ -68,11 +89,13 @@ class Tokens {
 
     int _size;
     int* _tokens;
+    std::string _chars;
 
     public:
         Tokens(Tokenizer* tokenizer, std::string str) {
             _size = str.size();
             _tokens = tokenizer->encode(str);
+            _chars = str;
         }
 
         ~Tokens() {
@@ -82,8 +105,28 @@ class Tokens {
         int size() {
             return _size;
         }
-        const int* tokens() const {
+        int* tokens() {
             return _tokens;
+        }
+        int tokens(int i) {
+            return _tokens[i];
+        }
+        const std::string chars() const {
+            return _chars;
+        }
+        const char chars(int i) const {
+            return _chars[i];
+        }
+
+        int* sample(int num_batches, int start, int length) {
+            if(start+length*num_batches >= _size) {
+                std::cerr << "Cannot sample " << num_batches << " x " << length << " tokens starting at index: " << start << "! Only " << _size << " tokens\n";
+                exit(EXIT_FAILURE);
+            }
+
+            int* out = (int*)malloc(sizeof(int)*length*num_batches);
+            for(int i = 0; i < length*num_batches; i++) { out[i] = _tokens[i+start]; }
+            return out; 
         }
 
         std::string pretty() {
