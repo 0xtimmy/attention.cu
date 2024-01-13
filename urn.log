@@ -1,0 +1,4 @@
+nvcc -o testall.exe ./testall.cu
+
+Compilation terminated.
+make: *** [testall] Interrupt
