@@ -59,7 +59,7 @@ int main(int argc, char *argv[]) {
     check(tensor_diff(c_attn_weight_grad, sa->c_attn->parameters["weights"], true), "c_attn_weight_grad grad");
     if(verbose) std::cout << "c_attn_weight_grad:\n" << sa->c_attn->parameters["weights"]->pretty_grad(true) << "\n";
     check(tensor_diff(c_attn_bias_grad, sa->c_attn->parameters["bias"], true), "c_attn_bias_grad grad");
-    if(verbose) std::cout << "c_attn_bias_grad:\n" << sa->c_attn->parameters["weights"]->pretty_grad(true) << "\n";
+    if(verbose) std::cout << "c_attn_bias_grad:\n" << sa->c_attn->parameters["bias"]->pretty_grad(true) << "\n";
     check(tensor_diff(c_proj_weight_grad, sa->c_proj->parameters["weights"], true), "c_proj_weight_grad grad");
     if(verbose) std::cout << "c_proj_weight_grad:\n" << sa->c_proj->parameters["weights"]->pretty_grad(true) << "\n";
     check(tensor_diff(c_proj_bias_grad, sa->c_proj->parameters["bias"], true), "c_proj_bias_grad grad");

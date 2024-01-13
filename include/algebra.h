@@ -131,7 +131,7 @@ namespace algebra {
     __global__ void add_grad(float* t, float* a, int sizet, int sizea) {
         int idx = blockIdx.x * blockDim.x + threadIdx.x;
         if(idx < sizea) {
-            for(int i = 0; i < sizet/sizea; i++) { a[idx] = t[i*sizea + (idx % sizea)]; }
+            for(int i = 0; i < sizet/sizea; i++) { a[idx] += t[i*sizea + (idx % sizea)]; }
         }
     }
 
@@ -644,8 +644,8 @@ namespace algebra {
         int split_row_idx = idx % split_rowsize;
         int split_row = (idx / split_rowsize) % batches; 
 
-        //if(idx < size) x_grad[split_row*rowsize + split*split_rowsize + split_row_idx] += t[idx];
-        if(idx < size) x_grad[split_row*rowsize + split*split_rowsize + split_row_idx] = split_row;
+        if(idx < size) x_grad[split_row*rowsize + split*split_rowsize + split_row_idx] += t[idx];
+        //if(idx < size) x_grad[split_row*rowsize + split*split_rowsize + split_row_idx] = split_row;
     }
 
     __global__ void cat(float* a, float* b, float* y, int batches, int sizea, int sizeb) {

@@ -9,12 +9,12 @@
 // as true to C as possible
 
 // Constants
-const int BATCH_SIZE = 1;
+const int BATCH_SIZE = 4;
 
 const int N_LAYERS = 1;
-const int N_HEAD = 8;
-const int N_EMBED = 1024;
-const int BLOCK_SIZE = 128;
+const int N_HEAD = 2;
+const int N_EMBED = 32;
+const int BLOCK_SIZE = 8;
 const int CONTEXT_SIZE = 1024;
 const int EPOCHS = 10000;
 
@@ -130,7 +130,7 @@ int main() {
             std::cerr << "Sample: ";
             std::cerr << tokenizer->decode_logits(logits, BLOCK_SIZE) << "\n";  
             L->toGPU();
-            //L->optimize(-0.005f);
+            L->optimize(-0.005f);
 
             L->free_graph();
 

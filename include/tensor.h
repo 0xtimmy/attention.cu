@@ -90,9 +90,10 @@ class Tensor {
             cce(cudaMalloc(&_gpu, sizeof(float) * size), "allocating tensor");
             cce(cudaMemset(_gpu, 0, sizeof(float)*size));
             _cpu_grad = (float*)malloc(sizeof(float) * size);
-            memset(_cpu_grad, 0, sizeof(float)*size);
+            //memset(_cpu_grad, 0, sizeof(float)*size);
+            for(int i = 0; i < size; i++) { _cpu_grad[i] = 0; }
             cce(cudaMalloc(&_gpu_grad, sizeof(float) * size), "allocating tensor grad");
-            cce(cudaMemset(_gpu_grad, 0, sizeof(float)*size));
+            //cce(cudaMemset(_gpu_grad, 0, sizeof(float)*size));
             cudaDeviceSynchronize();
             _onCPU = true;
             _backward = []() {};
@@ -116,7 +117,8 @@ class Tensor {
             cce(cudaMalloc(&_gpu, sizeof(float)*size), "allocating tensor");
             cce(cudaMemset(_gpu, 0, sizeof(float)*size));
             _cpu_grad = (float*)malloc(sizeof(float)*size);
-            memset(_cpu_grad, 0, sizeof(float)*size);
+            //memset(_cpu_grad, 0, sizeof(float)*size);
+            for(int i = 0; i < size; i++) { _cpu_grad[i] = 0; }
             cce(cudaMalloc(&_gpu_grad, sizeof(float)*size), "allocating tensor grad");
             cce(cudaMemset(_gpu_grad, 0, sizeof(float)*size));
             _onCPU = true;
@@ -138,7 +140,8 @@ class Tensor {
             cce(cudaMalloc(&_gpu, sizeof(float) * size), "allocating tensor\'");
             cce(cudaMemset(_gpu, 0, sizeof(float)*size));
             _cpu_grad = (float*)malloc(sizeof(float) * size);
-            memset(_cpu_grad, 0, sizeof(float)*size);
+            //memset(_cpu_grad, 0, sizeof(float)*size);
+            for(int i = 0; i < size; i++) { _cpu_grad[i] = 0; }
             cce(cudaMalloc(&_gpu_grad, sizeof(float) * size), "allocating tensor grad");
             cce(cudaMemset(_gpu_grad, 0, sizeof(float)*size));
             cce(cudaMemcpy(_gpu, _cpu, sizeof(float)*size, cudaMemcpyHostToDevice));
@@ -299,6 +302,7 @@ class Tensor {
                 cce(cudaMalloc(&delta, sizeof(float)*this->size()));
                 algebra::mul<<<(this->size()/128+1)*128, 128>>>(this->gpu_grad_ptr(), lp, delta, this->size());
                 algebra::sub<<<(this->size()/128+1)*128, 128>>>(this->gpu_ptr(), delta, this->size(), this->size());
+                algebra::set<<<(this->size()/128+1)*128, 128>>>(this->gpu_grad_ptr(), 0.0, this->size());
                 cudaFree(delta);
             }
         }
@@ -703,7 +707,7 @@ class Tensor {
                 cudaDeviceSynchronize();
 
                 t->gradient([t, this, a]() {
-                    algebra::add_grad<<<(this->size()/128+1)*128, 128>>>(t->gpu_grad_ptr(), this->gpu_ptr(), t->size(), this->size());
+                    algebra::add_grad<<<(this->size()/128+1)*128, 128>>>(t->gpu_grad_ptr(), this->gpu_grad_ptr(), t->size(), this->size());
                     algebra::add_grad<<<(a->size()/128+1)*128, 128>>>(t->gpu_grad_ptr(), a->gpu_grad_ptr(), t->size(), a->size());
                     cce("addition grad");
                 });
